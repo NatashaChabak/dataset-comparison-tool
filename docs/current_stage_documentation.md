@@ -2,7 +2,7 @@
 
 ## Stage Summary
 
-This stage contains the first working setup and comparison flow for the Dataset Comparison Tool. The application can upload two CSV files, preview a small part of each file, select key columns, create field mappings, save mappings as JSON, restore saved mappings from JSON, and compare the uploaded files with DuckDB and Parquet.
+This stage contains the first working setup and comparison flow for the Dataset Comparison Tool. The application can upload CSV or JSON files, preview a small part of each file, select key columns, create field mappings, save mappings as JSON, restore saved mappings from JSON, and compare the uploaded files with DuckDB and Parquet.
 
 DuckDB is now used for the comparison step. The app converts uploaded CSV files to temporary Parquet files, then compares the mapped fields through DuckDB.
 
@@ -11,6 +11,7 @@ DuckDB is now used for the comparison step. The app converts uploaded CSV files 
 - Streamlit application entry point in `app.py`
 - Upload controls for Dataset A and Dataset B
 - CSV preview with Pandas
+- JSON upload, flattening, and internal CSV conversion
 - Large-file friendly preview behavior
 - Key-column selection for both datasets
 - Field mapping screen
@@ -27,8 +28,8 @@ DuckDB is now used for the comparison step. The app converts uploaded CSV files 
 ## Current User Workflow
 
 1. Start the Streamlit app.
-2. Upload Dataset A as a CSV file.
-3. Upload Dataset B as a CSV file.
+2. Upload Dataset A as a CSV or JSON file.
+3. Upload Dataset B as a CSV or JSON file.
 4. Review the preview tables.
 5. Select the key column in Dataset A.
 6. Select the key column in Dataset B.
@@ -62,6 +63,8 @@ Sample files are available in `sample_data/`:
 
 - `customers_system_a.csv`
 - `customers_system_b.csv`
+- `customers_system_a.json`
+- `customers_system_b.json`
 
 Recommended test setup:
 
@@ -93,17 +96,50 @@ Current behavior:
 
 This keeps the setup screen responsive for large files. Full-file processing happens only when the user runs the DuckDB comparison.
 
+## JSON Upload Behavior
+
+JSON files are converted to a table before preview and comparison.
+
+Supported JSON shapes:
+
+- list of records
+- object containing a list of records, such as `{ "customers": [...] }`
+- nested object, flattened into columns with dot-style names
+
+For example, this nested JSON:
+
+```json
+{
+    "customer_id": "00123",
+    "name": {
+        "first": "Aino",
+        "last": "Korhonen"
+    }
+}
+```
+
+becomes columns like:
+
+```text
+customer_id
+name.first
+name.last
+```
+
+During comparison, JSON is converted to CSV internally, then DuckDB converts that CSV to Parquet.
+
 ## DuckDB and Parquet Processing
 
 The comparison step uses this process:
 
-1. Save the uploaded CSV files into a temporary folder.
-2. Convert each CSV file to Parquet with DuckDB.
-3. Keep all CSV columns as text during conversion to preserve IDs and codes such as `00123`.
-4. Read the Parquet files with DuckDB.
-5. Join records by the selected key fields.
-6. Compare only fields marked with `compare = true`.
-7. Normalize values according to the selected field type before comparison.
+1. Convert JSON uploads to CSV internally when needed.
+2. Save the uploaded or converted CSV files into a temporary folder.
+3. Convert each CSV file to Parquet with DuckDB.
+4. Keep all CSV columns as text during conversion to preserve IDs and codes such as `00123`.
+5. Read the Parquet files with DuckDB.
+6. Join records by the selected key fields.
+7. Compare only fields marked with `compare = true`.
+8. Normalize values according to the selected field type before comparison.
 
 Current comparison outputs:
 
@@ -158,6 +194,7 @@ Example structure:
 | File or folder | Purpose |
 | --- | --- |
 | `app.py` | Streamlit user interface |
+| `comparison/loader.py` | CSV and JSON loading, preview, flattening, and JSON-to-CSV conversion |
 | `comparison/mapper.py` | Save, list, load, and restore JSON mappings |
 | `comparison/compare_duckdb.py` | Convert CSV to Parquet and compare with DuckDB |
 | `sample_data/` | Example CSV files |
@@ -169,10 +206,10 @@ Example structure:
 ## Current Limitations
 
 - No Excel report export is implemented yet.
-- Only CSV upload is supported.
 - Mapping is based on preview columns from the first 100 rows.
 - Duplicate key detection is not implemented yet.
 - Result tables are limited for display, while summary counts show full counts.
+- Very large JSON files are flattened in memory before comparison.
 
 ## Manual Test Checklist
 
@@ -181,6 +218,8 @@ Use this checklist to confirm the current stage works:
 - App opens at `http://localhost:8501`
 - Dataset A CSV can be uploaded
 - Dataset B CSV can be uploaded
+- Dataset A JSON can be uploaded
+- Dataset B JSON can be uploaded
 - Preview tables appear for both datasets
 - Preview metrics show rows, columns, and file size
 - Dataset A key can be selected

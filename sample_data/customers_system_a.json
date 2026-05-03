@@ -1,0 +1,47 @@
+[
+    {
+        "customer_id": "00123",
+        "first_name": "Aino",
+        "last_name": "Korhonen",
+        "email": "aino.korhonen@example.com",
+        "created_at": "2026-04-01",
+        "amount": "120.50",
+        "status": "active"
+    },
+    {
+        "customer_id": "00124",
+        "first_name": "Mikko",
+        "last_name": "Nieminen",
+        "email": "mikko.nieminen@example.com",
+        "created_at": "2026-04-03",
+        "amount": "89.00",
+        "status": "active"
+    },
+    {
+        "customer_id": "00125",
+        "first_name": "Laura",
+        "last_name": "Heikkinen",
+        "email": "laura.heikkinen@example.com",
+        "created_at": "2026-04-05",
+        "amount": "250.00",
+        "status": "inactive"
+    },
+    {
+        "customer_id": "00126",
+        "first_name": "Teemu",
+        "last_name": "Laine",
+        "email": "teemu.laine@example.com",
+        "created_at": "2026-04-07",
+        "amount": "75.25",
+        "status": "active"
+    },
+    {
+        "customer_id": "00127",
+        "first_name": "Sofia",
+        "last_name": "Hakala",
+        "email": "sofia.hakala@example.com",
+        "created_at": "2026-04-09",
+        "amount": "310.00",
+        "status": "cancelled"
+    }
+]

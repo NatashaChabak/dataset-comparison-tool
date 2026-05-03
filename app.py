@@ -8,6 +8,7 @@ import pandas as pd
 import streamlit as st
 
 from comparison.compare_duckdb import compare_uploaded_csvs_with_duckdb
+from comparison.loader import read_upload_preview, upload_as_csv_buffer, uploaded_file_extension
 from comparison.mapper import (
     FIELD_TYPES,
     IGNORE_FIELD,
@@ -20,11 +21,6 @@ from comparison.mapper import (
 
 PREVIEW_ROWS = 100
 DISPLAY_ROWS = 20
-
-
-def read_csv_preview(file: BinaryIO, rows: int = PREVIEW_ROWS) -> pd.DataFrame:
-    """Read a small CSV preview while preserving IDs and codes as text."""
-    return pd.read_csv(file, dtype=str, nrows=rows).fillna("")
 
 
 def format_file_size(size: int | None) -> str:
@@ -41,7 +37,12 @@ def format_file_size(size: int | None) -> str:
     return f"{size_float:.1f} GB"
 
 
-def show_dataset_preview(label: str, data: pd.DataFrame, file_size: int | None) -> None:
+def show_dataset_preview(
+    label: str,
+    data: pd.DataFrame,
+    file_size: int | None,
+    file_type: str,
+) -> None:
     """Show basic dataset details and the first rows."""
     st.subheader(label)
 
@@ -51,10 +52,16 @@ def show_dataset_preview(label: str, data: pd.DataFrame, file_size: int | None) 
     metric_cols[2].metric("File size", format_file_size(file_size))
 
     st.dataframe(data.head(DISPLAY_ROWS), use_container_width=True)
-    st.caption(
-        f"Showing first {min(DISPLAY_ROWS, len(data))} rows. "
-        f"Only first {PREVIEW_ROWS} rows are loaded for this setup screen."
-    )
+    if file_type == "json":
+        st.caption(
+            f"Showing first {min(DISPLAY_ROWS, len(data))} rows. "
+            "JSON is flattened to table columns before preview and comparison."
+        )
+    else:
+        st.caption(
+            f"Showing first {min(DISPLAY_ROWS, len(data))} rows. "
+            f"Only first {PREVIEW_ROWS} rows are loaded for this setup screen."
+        )
 
 
 def field_index(options: list[str], value: str | None) -> int:
@@ -203,8 +210,8 @@ def render_duckdb_comparison_screen(
     st.divider()
     st.subheader("DuckDB / Parquet Comparison")
     st.caption(
-        "This step converts the uploaded CSV files to temporary Parquet files and "
-        "uses DuckDB to compare the mapped fields."
+        "This step converts uploaded CSV files, or JSON files flattened as CSV, "
+        "to temporary Parquet files and uses DuckDB to compare the mapped fields."
     )
 
     comparable_count = len(
@@ -231,9 +238,11 @@ def render_duckdb_comparison_screen(
 
     with st.spinner("Converting CSV files to Parquet and comparing with DuckDB..."):
         try:
+            csv_file_a = upload_as_csv_buffer(file_a)
+            csv_file_b = upload_as_csv_buffer(file_b)
             results = compare_uploaded_csvs_with_duckdb(
-                file_a,
-                file_b,
+                csv_file_a,
+                csv_file_b,
                 mapping,
                 limit=int(result_limit),
             )
@@ -270,29 +279,43 @@ def main() -> None:
 
     upload_col_a, upload_col_b = st.columns(2)
     with upload_col_a:
-        file_a = st.file_uploader("Upload Dataset A", type=["csv"], key="dataset_a")
+        file_a = st.file_uploader(
+            "Upload Dataset A", type=["csv", "json"], key="dataset_a"
+        )
     with upload_col_b:
-        file_b = st.file_uploader("Upload Dataset B", type=["csv"], key="dataset_b")
+        file_b = st.file_uploader(
+            "Upload Dataset B", type=["csv", "json"], key="dataset_b"
+        )
 
     if not file_a or not file_b:
         st.info(
-            "Upload two CSV files to preview the datasets and select key columns. "
+            "Upload two CSV or JSON files to preview the datasets and select key columns. "
             "For large files, this screen loads only a small preview."
         )
         return
 
     try:
-        df_a = read_csv_preview(file_a)
-        df_b = read_csv_preview(file_b)
+        df_a = read_upload_preview(file_a, PREVIEW_ROWS)
+        df_b = read_upload_preview(file_b, PREVIEW_ROWS)
     except Exception as exc:
-        st.error(f"Could not read one of the CSV files: {exc}")
+        st.error(f"Could not read one of the uploaded files: {exc}")
         return
 
     preview_col_a, preview_col_b = st.columns(2)
     with preview_col_a:
-        show_dataset_preview("Dataset A Preview", df_a, getattr(file_a, "size", None))
+        show_dataset_preview(
+            "Dataset A Preview",
+            df_a,
+            getattr(file_a, "size", None),
+            uploaded_file_extension(file_a),
+        )
     with preview_col_b:
-        show_dataset_preview("Dataset B Preview", df_b, getattr(file_b, "size", None))
+        show_dataset_preview(
+            "Dataset B Preview",
+            df_b,
+            getattr(file_b, "size", None),
+            uploaded_file_extension(file_b),
+        )
 
     st.divider()
     st.subheader("Key Column Selection")

@@ -4,7 +4,7 @@ A Streamlit application for comparing exported datasets when direct database acc
 
 ## Project Goal
 
-The tool will let a user upload two CSV files, preview them, select key columns, map fields between datasets, compare records, view results, and export an Excel report.
+The tool will let a user upload two CSV or JSON files, preview them, select key columns, map fields between datasets, compare records, view results, and export an Excel report.
 
 ## Current Status
 
@@ -12,9 +12,11 @@ Steps 1-4 are complete: the project structure is ready, dependencies are install
 
 The field mapping screen is now implemented too. It can map Dataset A columns to Dataset B columns, mark compare/key fields, choose field types, preview the mapping JSON, save mappings into `mappings/`, and restore saved mappings from JSON.
 
+CSV and JSON uploads are supported. JSON files are flattened into table columns, converted to CSV internally, and then used in the same comparison flow as CSV files.
+
 Large CSV uploads are handled carefully on the setup screen: the app reads only the first 100 rows for preview and field mapping, and displays the first 20 rows.
 
-DuckDB and Parquet are now used in the comparison step. Uploaded CSV files are saved temporarily, converted to Parquet, and compared with DuckDB using the active field mapping.
+DuckDB and Parquet are now used in the comparison step. Uploaded CSV files, including JSON files converted to CSV internally, are saved temporarily, converted to Parquet, and compared with DuckDB using the active field mapping.
 
 ## Project Structure
 
@@ -51,3 +53,5 @@ Sample files are available in `sample_data/`:
 
 - `customers_system_a.csv`
 - `customers_system_b.csv`
+- `customers_system_a.json`
+- `customers_system_b.json`

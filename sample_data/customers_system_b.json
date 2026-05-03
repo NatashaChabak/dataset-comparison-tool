@@ -1,0 +1,49 @@
+{
+    "customers": [
+        {
+            "cust_no": "00123",
+            "fname": "Aino",
+            "surname": "Korhonen",
+            "email_address": "aino.korhonen@example.com",
+            "creation_date": "2026-04-01",
+            "total_amount": "120.50",
+            "customer_status": "active"
+        },
+        {
+            "cust_no": "00124",
+            "fname": "Mikko",
+            "surname": "Nieminen",
+            "email_address": "mikko.nieminen@newmail.example.com",
+            "creation_date": "2026-04-03",
+            "total_amount": "89.00",
+            "customer_status": "active"
+        },
+        {
+            "cust_no": "00125",
+            "fname": "Laura",
+            "surname": "Heikkinen",
+            "email_address": "laura.heikkinen@example.com",
+            "creation_date": "2026-04-05",
+            "total_amount": "255.00",
+            "customer_status": "inactive"
+        },
+        {
+            "cust_no": "00128",
+            "fname": "Emil",
+            "surname": "Salonen",
+            "email_address": "emil.salonen@example.com",
+            "creation_date": "2026-04-11",
+            "total_amount": "66.40",
+            "customer_status": "active"
+        },
+        {
+            "cust_no": "00127",
+            "fname": "Sofia",
+            "surname": "Hakala",
+            "email_address": "sofia.hakala@example.com",
+            "creation_date": "2026-04-09",
+            "total_amount": "310.00",
+            "customer_status": "active"
+        }
+    ]
+}

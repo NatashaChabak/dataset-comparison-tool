@@ -2,9 +2,9 @@
 
 ## Stage Summary
 
-This stage contains the first working setup flow for the Dataset Comparison Tool. The application can upload two CSV files, preview a small part of each file, select key columns, create field mappings, save mappings as JSON, and restore saved mappings from JSON.
+This stage contains the first working setup and comparison flow for the Dataset Comparison Tool. The application can upload two CSV files, preview a small part of each file, select key columns, create field mappings, save mappings as JSON, restore saved mappings from JSON, and compare the uploaded files with DuckDB and Parquet.
 
-The comparison engine is not implemented yet. DuckDB is also not used yet; it is planned for a later large-file comparison step.
+DuckDB is now used for the comparison step. The app converts uploaded CSV files to temporary Parquet files, then compares the mapped fields through DuckDB.
 
 ## Implemented Features
 
@@ -19,6 +19,9 @@ The comparison engine is not implemented yet. DuckDB is also not used yet; it is
 - JSON mapping preview
 - Save mapping to `mappings/`
 - Restore mapping from a saved JSON file
+- DuckDB/Parquet comparison engine
+- Result summary metrics
+- Result tables for only-in-A, only-in-B, and different values
 - Sample CSV files for testing
 
 ## Current User Workflow
@@ -36,6 +39,8 @@ The comparison engine is not implemented yet. DuckDB is also not used yet; it is
 11. Review the generated JSON mapping.
 12. Save the mapping as JSON.
 13. Restore a saved mapping later with the restore button.
+14. Run the DuckDB comparison.
+15. Review summary counts and result tables.
 
 ## How to Run
 
@@ -86,7 +91,31 @@ Current behavior:
 - Preserves IDs and codes as text, including leading zeros such as `00123`.
 - Shows preview row count, column count, and file size.
 
-This keeps the setup screen responsive for large files. Full-file processing will be handled later in the comparison step.
+This keeps the setup screen responsive for large files. Full-file processing happens only when the user runs the DuckDB comparison.
+
+## DuckDB and Parquet Processing
+
+The comparison step uses this process:
+
+1. Save the uploaded CSV files into a temporary folder.
+2. Convert each CSV file to Parquet with DuckDB.
+3. Keep all CSV columns as text during conversion to preserve IDs and codes such as `00123`.
+4. Read the Parquet files with DuckDB.
+5. Join records by the selected key fields.
+6. Compare only fields marked with `compare = true`.
+7. Normalize values according to the selected field type before comparison.
+
+Current comparison outputs:
+
+- total rows in Dataset A
+- total rows in Dataset B
+- count of records only in Dataset A
+- count of records only in Dataset B
+- count of different mapped values
+- table of records only in Dataset A
+- table of records only in Dataset B
+- table of field-level differences
+- table of differences grouped by field
 
 ## Mapping JSON
 
@@ -130,6 +159,7 @@ Example structure:
 | --- | --- |
 | `app.py` | Streamlit user interface |
 | `comparison/mapper.py` | Save, list, load, and restore JSON mappings |
+| `comparison/compare_duckdb.py` | Convert CSV to Parquet and compare with DuckDB |
 | `sample_data/` | Example CSV files |
 | `mappings/` | Saved JSON mapping files |
 | `reports/` | Future Excel reports |
@@ -138,13 +168,11 @@ Example structure:
 
 ## Current Limitations
 
-- No actual dataset comparison is implemented yet.
 - No Excel report export is implemented yet.
-- DuckDB is not used yet.
 - Only CSV upload is supported.
 - Mapping is based on preview columns from the first 100 rows.
-- Type choices are stored, but normalization and comparison rules are not applied yet.
 - Duplicate key detection is not implemented yet.
+- Result tables are limited for display, while summary counts show full counts.
 
 ## Manual Test Checklist
 
@@ -166,17 +194,18 @@ Use this checklist to confirm the current stage works:
 - Mapping can be saved as JSON
 - Saved JSON file appears in `mappings/`
 - Saved mapping can be selected and restored with the restore button
+- DuckDB comparison can be run
+- Summary counts appear after comparison
+- Only-in-A, only-in-B, and different-value result tables appear
 
 ## Recommended Next Stage
 
-The next stage should implement the first comparison engine using Pandas and the saved mapping.
+The next stage should improve reporting and usability around the comparison results.
 
-Recommended result outputs:
+Recommended next additions:
 
-- Records only in Dataset A
-- Records only in Dataset B
-- Records found in both but with different values
-- Summary counts
-- Differences by field
-
-After the Pandas version works, DuckDB and Parquet can be added for large-file processing.
+- Excel report export
+- duplicate key warnings
+- better result charts
+- saved comparison result files
+- clearer validation messages when mapped fields are missing

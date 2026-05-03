@@ -12,7 +12,9 @@ Steps 1-4 are complete: the project structure is ready, dependencies are install
 
 The field mapping screen is now implemented too. It can map Dataset A columns to Dataset B columns, mark compare/key fields, choose field types, preview the mapping JSON, save mappings into `mappings/`, and restore saved mappings from JSON.
 
-Large CSV uploads are handled carefully on the setup screen: the app reads only the first 100 rows for preview and field mapping, and displays the first 20 rows. Full-file loading will be added later in the comparison step using a more suitable approach for large files.
+Large CSV uploads are handled carefully on the setup screen: the app reads only the first 100 rows for preview and field mapping, and displays the first 20 rows.
+
+DuckDB and Parquet are now used in the comparison step. Uploaded CSV files are saved temporarily, converted to Parquet, and compared with DuckDB using the active field mapping.
 
 ## Project Structure
 
@@ -25,6 +27,7 @@ Large CSV uploads are handled carefully on the setup screen: the app reads only 
 |   +-- normalizer.py
 |   +-- mapper.py
 |   +-- compare_pandas.py
+|   +-- compare_duckdb.py
 |   +-- report.py
 +-- docs/
 |   +-- current_stage_documentation.md
@@ -42,7 +45,7 @@ Current stage documentation is available in `docs/current_stage_documentation.md
 
 ## Next Step
 
-Implement the first comparison logic using the saved field mapping.
+Improve the result dashboard and add Excel report export.
 
 Sample files are available in `sample_data/`:
 

@@ -7,6 +7,7 @@ from typing import BinaryIO
 import pandas as pd
 import streamlit as st
 
+from comparison.compare_duckdb import compare_uploaded_csvs_with_duckdb
 from comparison.mapper import (
     FIELD_TYPES,
     IGNORE_FIELD,
@@ -69,7 +70,7 @@ def render_mapping_screen(
     df_b: pd.DataFrame,
     selected_key_a: str,
     selected_key_b: str,
-) -> None:
+) -> dict:
     """Render field mapping controls and save mappings as JSON."""
     st.divider()
     st.subheader("Field Mapping")
@@ -190,6 +191,77 @@ def render_mapping_screen(
         saved_path = save_mapping(mapping, mapping_name)
         st.success(f"Mapping saved to `{saved_path}`.")
 
+    return mapping
+
+
+def render_duckdb_comparison_screen(
+    file_a: BinaryIO,
+    file_b: BinaryIO,
+    mapping: dict,
+) -> None:
+    """Render DuckDB/Parquet comparison controls and results."""
+    st.divider()
+    st.subheader("DuckDB / Parquet Comparison")
+    st.caption(
+        "This step converts the uploaded CSV files to temporary Parquet files and "
+        "uses DuckDB to compare the mapped fields."
+    )
+
+    comparable_count = len(
+        [
+            field
+            for field in mapping.get("fields", [])
+            if field.get("compare") and not field.get("key")
+        ]
+    )
+    if not mapping.get("fields") or comparable_count == 0:
+        st.warning("Map at least one field and mark it for comparison first.")
+        return
+
+    result_limit = st.number_input(
+        "Maximum rows to show per result table",
+        min_value=10,
+        max_value=10000,
+        value=1000,
+        step=100,
+    )
+
+    if not st.button("Run DuckDB comparison", type="primary"):
+        return
+
+    with st.spinner("Converting CSV files to Parquet and comparing with DuckDB..."):
+        try:
+            results = compare_uploaded_csvs_with_duckdb(
+                file_a,
+                file_b,
+                mapping,
+                limit=int(result_limit),
+            )
+        except Exception as exc:
+            st.error(f"Could not run DuckDB comparison: {exc}")
+            return
+
+    summary = results["summary"]
+    metric_cols = st.columns(5)
+    metric_cols[0].metric("Rows in A", f"{summary['total_a']:,}")
+    metric_cols[1].metric("Rows in B", f"{summary['total_b']:,}")
+    metric_cols[2].metric("Only in A", f"{summary['only_a']:,}")
+    metric_cols[3].metric("Only in B", f"{summary['only_b']:,}")
+    metric_cols[4].metric("Different values", f"{summary['different_values']:,}")
+
+    st.markdown("**Differences by Field**")
+    st.dataframe(results["differences_by_field"], use_container_width=True)
+
+    tab_only_a, tab_only_b, tab_diff = st.tabs(
+        ["Only in Dataset A", "Only in Dataset B", "Different Values"]
+    )
+    with tab_only_a:
+        st.dataframe(results["only_a"], use_container_width=True)
+    with tab_only_b:
+        st.dataframe(results["only_b"], use_container_width=True)
+    with tab_diff:
+        st.dataframe(results["differences"], use_container_width=True)
+
 
 def main() -> None:
     """Run the application."""
@@ -235,7 +307,8 @@ def main() -> None:
         f"Selected keys: Dataset A `{selected_key_a}` and Dataset B `{selected_key_b}`."
     )
 
-    render_mapping_screen(df_a, df_b, selected_key_a, selected_key_b)
+    mapping = render_mapping_screen(df_a, df_b, selected_key_a, selected_key_b)
+    render_duckdb_comparison_screen(file_a, file_b, mapping)
 
 
 if __name__ == "__main__":

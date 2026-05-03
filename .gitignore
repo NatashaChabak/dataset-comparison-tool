@@ -2,6 +2,9 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .streamlit/
+.python_packages/
+temp/
+~$*.docx
 reports/*.xlsx
 !reports/.gitkeep
 !mappings/.gitkeep

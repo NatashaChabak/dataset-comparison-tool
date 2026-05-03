@@ -1,0 +1,58 @@
+{
+    "table": "customers",
+    "key": {
+        "a": "customer_id",
+        "b": "cust_no"
+    },
+    "fields": [
+        {
+            "source": "customer_id",
+            "target": "cust_no",
+            "type": "string",
+            "compare": true,
+            "key": true
+        },
+        {
+            "source": "first_name",
+            "target": "fname",
+            "type": "string",
+            "compare": false,
+            "key": false
+        },
+        {
+            "source": "last_name",
+            "target": "surname",
+            "type": "string",
+            "compare": false,
+            "key": false
+        },
+        {
+            "source": "email",
+            "target": "email_address",
+            "type": "string",
+            "compare": false,
+            "key": false
+        },
+        {
+            "source": "created_at",
+            "target": "creation_date",
+            "type": "string",
+            "compare": false,
+            "key": false
+        },
+        {
+            "source": "amount",
+            "target": "total_amount",
+            "type": "float",
+            "compare": true,
+            "key": false
+        },
+        {
+            "source": "status",
+            "target": "customer_status",
+            "type": "string",
+            "compare": true,
+            "key": false
+        }
+    ]
+}

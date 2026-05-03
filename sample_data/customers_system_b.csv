@@ -1,0 +1,6 @@
+cust_no,fname,surname,email_address,creation_date,total_amount,customer_status
+00123,Aino,Korhonen,aino.korhonen@example.com,2026-04-01,120.50,active
+00124,Mikko,Nieminen,mikko.nieminen@newmail.example.com,2026-04-03,89.00,active
+00125,Laura,Heikkinen,laura.heikkinen@example.com,2026-04-05,255.00,inactive
+00128,Emil,Salonen,emil.salonen@example.com,2026-04-11,66.40,active
+00127,Sofia,Hakala,sofia.hakala@example.com,2026-04-09,310.00,active

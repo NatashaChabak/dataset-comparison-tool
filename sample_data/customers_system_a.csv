@@ -1,0 +1,6 @@
+customer_id,first_name,last_name,email,created_at,amount,status
+00123,Aino,Korhonen,aino.korhonen@example.com,2026-04-01,120.50,active
+00124,Mikko,Nieminen,mikko.nieminen@example.com,2026-04-03,89.00,active
+00125,Laura,Heikkinen,laura.heikkinen@example.com,2026-04-05,250.00,inactive
+00126,Teemu,Laine,teemu.laine@example.com,2026-04-07,75.25,active
+00127,Sofia,Hakala,sofia.hakala@example.com,2026-04-09,310.00,cancelled

@@ -17,6 +17,7 @@ from comparison.mapper import (
     restore_mapping_from_json,
     save_mapping,
 )
+from comparison.report import build_comparison_excel_report
 
 
 PREVIEW_ROWS = 100
@@ -276,6 +277,14 @@ def render_duckdb_comparison_screen(
         st.dataframe(results["only_b"], use_container_width=True)
     with tab_diff:
         st.dataframe(results["differences"], use_container_width=True)
+
+    report_bytes = build_comparison_excel_report(results)
+    st.download_button(
+        "Download comparison report as Excel",
+        data=report_bytes,
+        file_name=f"{mapping.get('table', 'comparison')}_comparison_report.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
 
 
 def main() -> None:

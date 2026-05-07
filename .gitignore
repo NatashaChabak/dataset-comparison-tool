@@ -3,7 +3,10 @@ __pycache__/
 .pytest_cache/
 .streamlit/
 .python_packages/
+node_modules/
 temp/
+sample_data/
+outputs/
 ~$*.docx
 reports/*.xlsx
 !reports/.gitkeep

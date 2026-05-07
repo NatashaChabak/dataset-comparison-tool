@@ -2,7 +2,7 @@
 
 ## Stage Summary
 
-This stage contains the first working setup and comparison flow for the Dataset Comparison Tool. The application can upload CSV or JSON files, preview a small part of each file, select key columns, create field mappings, save mappings as JSON, restore saved mappings from JSON, and compare the uploaded files with DuckDB and Parquet.
+This stage contains the first working setup and comparison flow for the Dataset Comparison Tool. The application can upload CSV, JSON, or Excel files, preview a small part of each file, select key columns, create field mappings, save mappings as JSON, restore saved mappings from JSON, and compare the uploaded files with DuckDB and Parquet.
 
 DuckDB is now used for the comparison step. The app converts uploaded CSV files to temporary Parquet files, then compares the mapped fields through DuckDB.
 
@@ -12,6 +12,7 @@ DuckDB is now used for the comparison step. The app converts uploaded CSV files 
 - Upload controls for Dataset A and Dataset B
 - CSV preview with Pandas
 - JSON upload, flattening, and internal CSV conversion
+- Excel upload with automatic first-sheet reading
 - Large-file friendly preview behavior
 - Key-column selection for both datasets
 - Field mapping screen
@@ -28,8 +29,8 @@ DuckDB is now used for the comparison step. The app converts uploaded CSV files 
 ## Current User Workflow
 
 1. Start the Streamlit app.
-2. Upload Dataset A as a CSV or JSON file.
-3. Upload Dataset B as a CSV or JSON file.
+2. Upload Dataset A as a CSV, JSON, or Excel file.
+3. Upload Dataset B as a CSV, JSON, or Excel file.
 4. Review the preview tables.
 5. Select the key column in Dataset A.
 6. Select the key column in Dataset B.
@@ -65,6 +66,8 @@ Sample files are available in `sample_data/`:
 - `customers_system_b.csv`
 - `customers_system_a.json`
 - `customers_system_b.json`
+- `customers_system_a.xlsx`
+- `customers_system_b.xlsx`
 
 Recommended test setup:
 
@@ -128,11 +131,22 @@ name.last
 
 During comparison, JSON is converted to CSV internally, then DuckDB converts that CSV to Parquet.
 
+## Excel Upload Behavior
+
+Excel files are supported with the simplest first version:
+
+- `.xlsx` and `.xls` files are accepted.
+- The first sheet is read automatically.
+- Values are preserved as text where possible.
+- The first sheet is converted to CSV internally before DuckDB/Parquet comparison.
+
+If an Excel workbook has several sheets, the current version does not ask which sheet to use. It always uses the first sheet.
+
 ## DuckDB and Parquet Processing
 
 The comparison step uses this process:
 
-1. Convert JSON uploads to CSV internally when needed.
+1. Convert JSON and Excel uploads to CSV internally when needed.
 2. Save the uploaded or converted CSV files into a temporary folder.
 3. Convert each CSV file to Parquet with DuckDB.
 4. Keep all CSV columns as text during conversion to preserve IDs and codes such as `00123`.
@@ -194,7 +208,7 @@ Example structure:
 | File or folder | Purpose |
 | --- | --- |
 | `app.py` | Streamlit user interface |
-| `comparison/loader.py` | CSV and JSON loading, preview, flattening, and JSON-to-CSV conversion |
+| `comparison/loader.py` | CSV, JSON, and Excel loading, preview, flattening, and conversion to CSV |
 | `comparison/mapper.py` | Save, list, load, and restore JSON mappings |
 | `comparison/compare_duckdb.py` | Convert CSV to Parquet and compare with DuckDB |
 | `sample_data/` | Example CSV files |
@@ -220,6 +234,8 @@ Use this checklist to confirm the current stage works:
 - Dataset B CSV can be uploaded
 - Dataset A JSON can be uploaded
 - Dataset B JSON can be uploaded
+- Dataset A Excel file can be uploaded
+- Dataset B Excel file can be uploaded
 - Preview tables appear for both datasets
 - Preview metrics show rows, columns, and file size
 - Dataset A key can be selected

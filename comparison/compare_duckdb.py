@@ -99,11 +99,11 @@ def normalize_expression(expression: str, field_type: str) -> str:
 
 
 def comparable_fields(mapping: dict[str, Any]) -> list[dict[str, Any]]:
-    """Return mapped fields selected for comparison, excluding key fields."""
+    """Return mapped fields selected for comparison."""
     return [
         field
         for field in mapping.get("fields", [])
-        if field.get("compare") and not field.get("key")
+        if field.get("compare")
     ]
 
 

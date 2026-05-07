@@ -1,5 +1,5 @@
 {
-    "table": "customers",
+    "table": "Items",
     "key": {
         "a": "article",
         "b": "\u0410\u0440\u0442\u0438\u043a\u0443\u043b"

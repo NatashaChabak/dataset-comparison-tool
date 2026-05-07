@@ -3,10 +3,22 @@
 from __future__ import annotations
 
 import json
+import sys
 from io import BytesIO
+from pathlib import Path
 from typing import Any, BinaryIO
 
 import pandas as pd
+
+
+LOCAL_PACKAGE_DIR = Path(".python_packages")
+
+
+def ensure_local_packages_available() -> None:
+    """Allow workspace-local packages installed with pip --target to be imported."""
+    package_path = str(LOCAL_PACKAGE_DIR.resolve())
+    if LOCAL_PACKAGE_DIR.exists() and package_path not in sys.path:
+        sys.path.insert(0, package_path)
 
 
 def dataframe_as_text(data: pd.DataFrame) -> pd.DataFrame:
@@ -66,6 +78,20 @@ def read_json_preview(file: BinaryIO, rows: int) -> pd.DataFrame:
     return json_to_dataframe(file).head(rows)
 
 
+def excel_to_dataframe(file: BinaryIO) -> pd.DataFrame:
+    """Read the first Excel sheet as a dataframe."""
+    ensure_local_packages_available()
+    file.seek(0)
+    data = pd.read_excel(file, dtype=str, sheet_name=0).fillna("")
+    file.seek(0)
+    return dataframe_as_text(data)
+
+
+def read_excel_preview(file: BinaryIO, rows: int) -> pd.DataFrame:
+    """Read the first Excel sheet and return only preview rows."""
+    return excel_to_dataframe(file).head(rows)
+
+
 def uploaded_file_extension(file: BinaryIO) -> str:
     """Return the uploaded file extension."""
     name = getattr(file, "name", "")
@@ -73,22 +99,30 @@ def uploaded_file_extension(file: BinaryIO) -> str:
 
 
 def read_upload_preview(file: BinaryIO, rows: int) -> pd.DataFrame:
-    """Read a CSV or JSON upload for the setup preview screen."""
+    """Read a CSV, JSON, or Excel upload for the setup preview screen."""
     extension = uploaded_file_extension(file)
     if extension == "json":
         return read_json_preview(file, rows)
+    if extension in {"xlsx", "xls"}:
+        return read_excel_preview(file, rows)
 
     return read_csv_preview(file, rows)
 
 
 def upload_as_csv_buffer(file: BinaryIO) -> BinaryIO:
-    """Return an uploaded CSV or JSON file as a CSV byte buffer."""
+    """Return an uploaded CSV, JSON, or Excel file as a CSV byte buffer."""
     extension = uploaded_file_extension(file)
-    if extension != "json":
+    if extension == "csv":
         file.seek(0)
         return file
 
-    data = json_to_dataframe(file)
+    if extension == "json":
+        data = json_to_dataframe(file)
+    elif extension in {"xlsx", "xls"}:
+        data = excel_to_dataframe(file)
+    else:
+        raise ValueError(f"Unsupported file type: {extension or 'unknown'}")
+
     buffer = BytesIO()
     data.to_csv(buffer, index=False)
     buffer.seek(0)

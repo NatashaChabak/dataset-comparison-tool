@@ -57,6 +57,11 @@ def show_dataset_preview(
             f"Showing first {min(DISPLAY_ROWS, len(data))} rows. "
             "JSON is flattened to table columns before preview and comparison."
         )
+    elif file_type in {"xlsx", "xls"}:
+        st.caption(
+            f"Showing first {min(DISPLAY_ROWS, len(data))} rows. "
+            "The first Excel sheet is read automatically before preview and comparison."
+        )
     else:
         st.caption(
             f"Showing first {min(DISPLAY_ROWS, len(data))} rows. "
@@ -211,14 +216,15 @@ def render_duckdb_comparison_screen(
     st.subheader("DuckDB / Parquet Comparison")
     st.caption(
         "This step converts uploaded CSV files, or JSON files flattened as CSV, "
-        "to temporary Parquet files and uses DuckDB to compare the mapped fields."
+        "or Excel first sheets converted as CSV, to temporary Parquet files and "
+        "uses DuckDB to compare the mapped fields."
     )
 
     comparable_count = len(
         [
             field
             for field in mapping.get("fields", [])
-            if field.get("compare") and not field.get("key")
+            if field.get("compare")
         ]
     )
     if not mapping.get("fields") or comparable_count == 0:
@@ -280,17 +286,17 @@ def main() -> None:
     upload_col_a, upload_col_b = st.columns(2)
     with upload_col_a:
         file_a = st.file_uploader(
-            "Upload Dataset A", type=["csv", "json"], key="dataset_a"
+            "Upload Dataset A", type=["csv", "json", "xlsx", "xls"], key="dataset_a"
         )
     with upload_col_b:
         file_b = st.file_uploader(
-            "Upload Dataset B", type=["csv", "json"], key="dataset_b"
+            "Upload Dataset B", type=["csv", "json", "xlsx", "xls"], key="dataset_b"
         )
 
     if not file_a or not file_b:
         st.info(
-            "Upload two CSV or JSON files to preview the datasets and select key columns. "
-            "For large files, this screen loads only a small preview."
+            "Upload two CSV, JSON, or Excel files to preview the datasets and select "
+            "key columns. Excel files use the first sheet automatically."
         )
         return
 

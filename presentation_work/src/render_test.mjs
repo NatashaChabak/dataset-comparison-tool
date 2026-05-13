@@ -1,0 +1,10 @@
+import { Presentation, column, text, fill, hug, drawSlideToCtx } from '@oai/artifact-tool';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const { Canvas } = require('../../node_modules/@oai/artifact-tool/node_modules/skia-canvas');
+const p=Presentation.create({slideSize:{width:1920,height:1080}}); const s=p.slides.add();
+s.compose(column({width:fill,height:fill,padding:80,gap:20},[text('Preview',{width:fill,height:hug,style:{fontSize:80,bold:true,color:'#111'}})]),{frame:{left:0,top:0,width:1920,height:1080},baseUnit:8});
+const canvas = new Canvas(1920,1080); const ctx = canvas.getContext('2d');
+await drawSlideToCtx(s,p,ctx,null,null,null,null,null,null,null,null,{clearBeforeDraw:true});
+await canvas.saveAs('presentation_work/scratch/preview-test.png');
+console.log('ok');

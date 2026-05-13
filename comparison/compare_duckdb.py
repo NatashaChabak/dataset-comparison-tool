@@ -174,6 +174,36 @@ def compare_parquet_files(
             """
         ).fetchdf()
 
+        matched_count = connection.execute(
+            f"""
+            SELECT count(*) AS count
+            FROM dataset_a a
+            INNER JOIN dataset_b b ON a.{key_a_sql} = b.{key_b_sql}
+            """
+        ).fetchone()[0]
+
+        matched_columns = [f"a.{key_a_sql} AS key"]
+        for field in comparable_fields(mapping):
+            source = quote_identifier(field["source"])
+            target = quote_identifier(field["target"])
+            source_label = quote_identifier(f"A {field['source']}")
+            target_label = quote_identifier(f"B {field['target']}")
+            matched_columns.extend(
+                [
+                    f"cast(a.{source} AS varchar) AS {source_label}",
+                    f"cast(b.{target} AS varchar) AS {target_label}",
+                ]
+            )
+
+        matched_data = connection.execute(
+            f"""
+            SELECT {", ".join(matched_columns)}
+            FROM dataset_a a
+            INNER JOIN dataset_b b ON a.{key_a_sql} = b.{key_b_sql}
+            LIMIT {int(limit)}
+            """
+        ).fetchdf()
+
         difference_queries = []
         for field in comparable_fields(mapping):
             source = quote_identifier(field["source"])
@@ -226,11 +256,13 @@ def compare_parquet_files(
             "total_b": int(counts["total_b"]),
             "only_a": int(only_a_count),
             "only_b": int(only_b_count),
+            "matched": int(matched_count),
             "different_values": int(difference_count),
             "result_limit": limit,
         },
         "only_a": only_a,
         "only_b": only_b,
+        "matched_data": matched_data,
         "differences": differences,
         "differences_by_field": differences_by_field,
     }

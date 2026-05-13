@@ -1,0 +1,17 @@
+{
+  "workspace": "C:\\Users\\n.zhitnikova\\OneDrive - Karelia Ammattikorkeakoulu Oy\\Tiedostot\\New project\\presentation_work",
+  "pptx": "C:\\Users\\n.zhitnikova\\OneDrive - Karelia Ammattikorkeakoulu Oy\\Tiedostot\\New project\\presentation_work\\output\\output.pptx",
+  "checks": {
+    "output_hygiene": {
+      "output_dir": "C:\\Users\\n.zhitnikova\\OneDrive - Karelia Ammattikorkeakoulu Oy\\Tiedostot\\New project\\presentation_work\\output",
+      "unexpected_files": [
+        "test.pptx"
+      ]
+    }
+  },
+  "failures": [
+    "PPTX package inspection failed: unzip -Z1 C:\\Users\\n.zhitnikova\\OneDrive - Karelia Ammattikorkeakoulu Oy\\Tiedostot\\New project\\presentation_work\\output\\output.pptx failed",
+    "output/ contains non-deliverable files: test.pptx"
+  ],
+  "warnings": []
+}

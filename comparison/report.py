@@ -15,6 +15,7 @@ def summary_to_dataframe(summary: dict[str, Any]) -> pd.DataFrame:
         "total_b": "Rows in Dataset B",
         "only_a": "Records only in Dataset A",
         "only_b": "Records only in Dataset B",
+        "matched": "Records matched by key",
         "different_values": "Different mapped values",
         "result_limit": "Result row display limit",
     }
@@ -55,6 +56,7 @@ def build_comparison_excel_report(results: dict[str, Any]) -> bytes:
         write_sheet(writer, "Summary", summary_to_dataframe(results["summary"]))
         write_sheet(writer, "Only in A", results["only_a"])
         write_sheet(writer, "Only in B", results["only_b"])
+        write_sheet(writer, "Matched Data", results["matched_data"])
         write_sheet(writer, "Different Values", results["differences"])
         write_sheet(writer, "Differences by Field", results["differences_by_field"])
 

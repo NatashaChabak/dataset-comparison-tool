@@ -258,23 +258,26 @@ def render_duckdb_comparison_screen(
             return
 
     summary = results["summary"]
-    metric_cols = st.columns(5)
+    metric_cols = st.columns(6)
     metric_cols[0].metric("Rows in A", f"{summary['total_a']:,}")
     metric_cols[1].metric("Rows in B", f"{summary['total_b']:,}")
     metric_cols[2].metric("Only in A", f"{summary['only_a']:,}")
     metric_cols[3].metric("Only in B", f"{summary['only_b']:,}")
-    metric_cols[4].metric("Different values", f"{summary['different_values']:,}")
+    metric_cols[4].metric("Matched", f"{summary['matched']:,}")
+    metric_cols[5].metric("Different values", f"{summary['different_values']:,}")
 
     st.markdown("**Differences by Field**")
     st.dataframe(results["differences_by_field"], use_container_width=True)
 
-    tab_only_a, tab_only_b, tab_diff = st.tabs(
-        ["Only in Dataset A", "Only in Dataset B", "Different Values"]
+    tab_only_a, tab_only_b, tab_matched, tab_diff = st.tabs(
+        ["Only in Dataset A", "Only in Dataset B", "Matched Data", "Different Values"]
     )
     with tab_only_a:
         st.dataframe(results["only_a"], use_container_width=True)
     with tab_only_b:
         st.dataframe(results["only_b"], use_container_width=True)
+    with tab_matched:
+        st.dataframe(results["matched_data"], use_container_width=True)
     with tab_diff:
         st.dataframe(results["differences"], use_container_width=True)
 

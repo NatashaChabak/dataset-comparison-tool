@@ -51,12 +51,13 @@ def write_sheet(
 def build_comparison_excel_report(results: dict[str, Any]) -> bytes:
     """Build an Excel workbook from comparison results."""
     output = BytesIO()
+    matched_data = results.get("matched_data", pd.DataFrame())
 
     with pd.ExcelWriter(output, engine="openpyxl") as writer:
         write_sheet(writer, "Summary", summary_to_dataframe(results["summary"]))
         write_sheet(writer, "Only in A", results["only_a"])
         write_sheet(writer, "Only in B", results["only_b"])
-        write_sheet(writer, "Matched Data", results["matched_data"])
+        write_sheet(writer, "Matched Data", matched_data)
         write_sheet(writer, "Different Values", results["differences"])
         write_sheet(writer, "Differences by Field", results["differences_by_field"])
 

@@ -258,6 +258,11 @@ def render_duckdb_comparison_screen(
             return
 
     summary = results["summary"]
+    if "matched" not in summary:
+        summary["matched"] = max(summary["total_a"] - summary["only_a"], 0)
+    if "matched_data" not in results:
+        results["matched_data"] = pd.DataFrame()
+
     metric_cols = st.columns(6)
     metric_cols[0].metric("Rows in A", f"{summary['total_a']:,}")
     metric_cols[1].metric("Rows in B", f"{summary['total_b']:,}")
